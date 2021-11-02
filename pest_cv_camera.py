@@ -33,18 +33,19 @@ IM_HEIGHT = 720
 #IM_HEIGHT = 480   slightly faster framerate
 
 # This is needed since the working directory is the object_detection folder.
-sys.path.append('..')
+# sys.path.append('..')
+sys.path.insert(0, './models/research')
 
 # Import utilites
-from models.research.object_detection.utils import label_map_util
-from models.research.object_detection.utils import visualization_utils as vis_util
+from object_detection.utils import label_map_util
+from object_detection.utils import visualization_utils as vis_util
 
 # Name of the directory containing the object detection module we're using
 MODEL_NAME = 'ssdlite_mobilenet_v2_coco_2018_05_09'
 
 # Grab path to current working directory
 CWD_PATH = os.getcwd()
-OBJ_DETECTION_PATH = CWD_PATH.append("models/research/object_detection")
+OBJ_DETECTION_PATH = CWD_PATH + "/models/research/object_detection"
 
 # Path to frozen detection graph .pb file, which contains the model that is used
 # for object detection.
