@@ -52,7 +52,7 @@ OBJ_DETECTION_PATH = CWD_PATH + "/models/research/object_detection"
 PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,'frozen_inference_graph.pb')
 
 # Path to label map file
-PATH_TO_LABELS = os.path.join(OBJ_DETECTION_PATH,'data','mscoco_label_map.pbtxt')
+PATH_TO_LABELS = os.path.join(CWD_PATH,'config','pest.pbtxt')
 
 # Number of classes the object detector can identify
 NUM_CLASSES = 90
