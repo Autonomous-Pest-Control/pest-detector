@@ -1,0 +1,12 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+vidgear = "==0.1.8"
+numpy = "==1.19.5"
+opencv-contrib-python = "==4.5.1.48"
+
+[dev-packages]
+

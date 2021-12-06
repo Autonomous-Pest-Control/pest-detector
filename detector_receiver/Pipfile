@@ -4,12 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-opencv-python = "==4.5.1.48"
-tensorflow = "==2.6.0"
-numpy = "==1.19.5"
 matplotlib = "*"
+numpy = "==1.19.5"
+opencv-python = "==4.5.1.48"
+vidgear = "==0.1.8"
+tensorflow-gpu = "==2.6.0"
 
 [dev-packages]
-
-[requires]
-python_version = "3.7.3"

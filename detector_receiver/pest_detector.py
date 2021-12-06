@@ -17,14 +17,13 @@ import os
 import cv2
 import numpy as np
 import tensorflow as tf
+from vidgear.gears import NetGear
 import argparse
 import sys
 
 # Set up camera constants
 IM_WIDTH = 1280
 IM_HEIGHT = 720
-#IM_WIDTH = 640    Use smaller resolution for
-#IM_HEIGHT = 480   slightly faster framerate
 
 # This is needed since the working directory is the object_detection folder.
 # sys.path.append('..')
@@ -100,13 +99,27 @@ camera = cv2.VideoCapture(0)
 ret = camera.set(3,IM_WIDTH)
 ret = camera.set(4,IM_HEIGHT)
 
+options = {'THREADED_QUEUE_MODE': False}
+client = NetGear('0.0.0.0', '5454', 'tcp',
+                 1, receive_mode=True, logging=True, **options)  # Define netgear client at Server IP address.
+
 while(True):
 
     t1 = cv2.getTickCount()
 
     # Acquire frame and expand frame dimensions to have shape: [1, None, None, 3]
     # i.e. a single-column array, where each item in the column has the pixel RGB value
-    ret, frame = camera.read()
+
+    # # Local camera detection
+    # ret, frame = camera.read()
+
+    # Get camera frame from client
+    frame = client.recv()
+
+    if frame is None:
+        print("Lost connection to client.  Try restarting!")
+        break
+
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     frame_expanded = np.expand_dims(frame_rgb, axis=0)
 
