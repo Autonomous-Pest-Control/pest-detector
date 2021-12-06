@@ -17,9 +17,45 @@ import os
 import cv2
 import numpy as np
 import tensorflow as tf
+from tensorflow.python.ops.gen_array_ops import empty
 from vidgear.gears import NetGear
 import argparse
 import sys
+
+def run_detection_single_frame(model_args, frame_expanded):
+    """Runs detection on a single image
+    
+    Args:
+        model (model): Model
+        image (byte): Numpy image array
+    
+    Returns:
+        dict: output_dict with labels/confidence
+    """
+
+    detections = []
+    output_dict = {}
+
+    (boxes, scores, classes, num) = sess.run(model_args, feed_dict={image_tensor: frame_expanded})
+
+    out_boxes = np.squeeze(boxes)
+    out_classes = np.squeeze(classes).astype(np.int32)
+    out_scores = np.squeeze(scores)
+    num_detections = int(num[0])
+
+    output_dict['classes'] = out_classes
+    output_dict['boxes'] = out_boxes
+    output_dict['scores'] = out_scores
+
+    for i, class_id in np.ndenumerate(out_classes):
+        indx = i[0]
+        if indx >= num_detections or num_detections == 0:
+            break
+        detection_box = out_boxes[indx]
+        average_x = (detection_box[1] + detection_box[3]) / 2.0
+        detections.append((class_id, average_x))
+
+    return (detections, output_dict)
 
 # Set up camera constants
 IM_WIDTH = 1280
@@ -124,16 +160,19 @@ while(True):
     frame_expanded = np.expand_dims(frame_rgb, axis=0)
 
     # Perform the actual detection by running the model with the image as input
-    (boxes, scores, classes, num) = sess.run(
-        [detection_boxes, detection_scores, detection_classes, num_detections],
-        feed_dict={image_tensor: frame_expanded})
+    model_config = [detection_boxes, detection_scores, detection_classes, num_detections]
+    (detections, output_dict) = run_detection_single_frame(model_config, frame_expanded)
+
+    for (class_id, avg_x) in detections:
+        if class_id == 1:
+            print(f'Person: x={avg_x}')
 
     # Draw the results of the detection (aka 'visulaize the results')
     vis_util.visualize_boxes_and_labels_on_image_array(
         frame,
-        np.squeeze(boxes),
-        np.squeeze(classes).astype(np.int32),
-        np.squeeze(scores),
+        output_dict['boxes'],
+        output_dict['classes'],
+        output_dict['scores'],
         category_index,
         use_normalized_coordinates=True,
         line_thickness=8,
