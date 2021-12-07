@@ -21,6 +21,7 @@ from tensorflow.python.ops.gen_array_ops import empty
 from vidgear.gears import NetGear
 import argparse
 import sys
+from detection_server import DetectionServer
 
 def run_detection_single_frame(model_args, frame_expanded):
     """Runs detection on a single image
@@ -139,9 +140,10 @@ options = {'THREADED_QUEUE_MODE': False}
 client = NetGear('0.0.0.0', '5454', 'tcp',
                  1, receive_mode=True, logging=True, **options)  # Define netgear client at Server IP address.
 
+server = DetectionServer()
+
 while(True):
 
-    t1 = cv2.getTickCount()
 
     # Acquire frame and expand frame dimensions to have shape: [1, None, None, 3]
     # i.e. a single-column array, where each item in the column has the pixel RGB value
@@ -150,47 +152,52 @@ while(True):
     # ret, frame = camera.read()
 
     # Get camera frame from client
-    frame = client.recv()
+    try:
+        t1 = cv2.getTickCount()
+        frame = client.recv()
 
-    if frame is None:
-        print("Lost connection to client.  Try restarting!")
+        if frame is None:
+            print("Failed to receive data from client!")
+            break
+
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_expanded = np.expand_dims(frame_rgb, axis=0)
+
+        # Perform the actual detection by running the model with the image as input
+        model_config = [detection_boxes, detection_scores, detection_classes, num_detections]
+        (detections, output_dict) = run_detection_single_frame(model_config, frame_expanded)
+
+        for (class_id, avg_x) in detections:
+            if class_id == 1:
+                print(f'Person: x={avg_x}')
+
+        # Draw the results of the detection (aka 'visulaize the results')
+        vis_util.visualize_boxes_and_labels_on_image_array(
+            frame,
+            output_dict['boxes'],
+            output_dict['classes'],
+            output_dict['scores'],
+            category_index,
+            use_normalized_coordinates=True,
+            line_thickness=8,
+            min_score_thresh=0.85)
+
+        cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
+        
+        # All the results have been drawn on the frame, so it's time to display it.
+        cv2.imshow('Object detector', frame)
+
+        t2 = cv2.getTickCount()
+        time1 = (t2-t1)/freq
+        frame_rate_calc = 1/time1
+    except KeyboardInterrupt:
         break
-
-    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    frame_expanded = np.expand_dims(frame_rgb, axis=0)
-
-    # Perform the actual detection by running the model with the image as input
-    model_config = [detection_boxes, detection_scores, detection_classes, num_detections]
-    (detections, output_dict) = run_detection_single_frame(model_config, frame_expanded)
-
-    for (class_id, avg_x) in detections:
-        if class_id == 1:
-            print(f'Person: x={avg_x}')
-
-    # Draw the results of the detection (aka 'visulaize the results')
-    vis_util.visualize_boxes_and_labels_on_image_array(
-        frame,
-        output_dict['boxes'],
-        output_dict['classes'],
-        output_dict['scores'],
-        category_index,
-        use_normalized_coordinates=True,
-        line_thickness=8,
-        min_score_thresh=0.85)
-
-    cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
-    
-    # All the results have been drawn on the frame, so it's time to display it.
-    cv2.imshow('Object detector', frame)
-
-    t2 = cv2.getTickCount()
-    time1 = (t2-t1)/freq
-    frame_rate_calc = 1/time1
 
     # Press 'q' to quit
     if cv2.waitKey(1) == ord('q'):
         break
 
+server.stop()
 camera.release()
 
 cv2.destroyAllWindows()
