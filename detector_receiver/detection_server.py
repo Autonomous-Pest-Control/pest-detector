@@ -1,10 +1,9 @@
 import socket
 import sys
 import threading
-import time
 
 HOST = ''	# Symbolic name meaning all available interfaces
-PORT = 8888	# Arbitrary non-privileged port
+PORT = 5455	# Arbitrary non-privileged port
 
 class DetectionServer:
     def __init__(self):
