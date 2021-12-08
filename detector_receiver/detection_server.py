@@ -1,9 +1,12 @@
 import socket
 import sys
 import threading
+import time
 
 HOST = ''	# Symbolic name meaning all available interfaces
 PORT = 5455	# Arbitrary non-privileged port
+
+SEND_RATE = 4
 
 class DetectionServer:
     def __init__(self):
@@ -31,7 +34,10 @@ class DetectionServer:
         t.start()
         self.listen_thread = t
         self.client_thread = None
-        self.conn = None
+        self.client_conn = None
+        
+        self.last_message = None
+
 
     def start_listening(self):
         while not self.stopped:
@@ -41,6 +47,8 @@ class DetectionServer:
                 t = threading.Thread(target=self.client_connection)
                 t.start()
                 self.client_thread = t
+                self.client_conn = conn
+                self.client_addr = addr
                 break
             except socket.timeout:
                 # print("Socket time out")
@@ -49,7 +57,15 @@ class DetectionServer:
 
     def client_connection(self):
         while not self.stopped:
-            print('Client connection')
+            if self.last_message is not None:
+                message = bytes(self.last_message, 'ascii')
+                self.client_conn.sendall(message)
+                print(f'Forwarded message to client \'{message}\'')
+            time.sleep(1.0/SEND_RATE)
+
+
+    def send_detection(self, class_id, x_loc):
+        self.last_message = str(class_id) + ',' + str(x_loc)
 
 
     def stop(self):
