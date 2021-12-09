@@ -3,12 +3,9 @@ import sys
 import threading
 import toml
 
-config = toml.load('../Config.toml')
+from detection_message import MESSAGE_LENGTH, DetectionMessage
 
-MAX_X_LOCATION_CHARS = 19
-MAX_CLASS_ID_CHARS = 2
-SEPARATOR_CHARS = 1
-MAX_EXPECTED_DATA_LEN = MAX_CLASS_ID_CHARS + SEPARATOR_CHARS + MAX_X_LOCATION_CHARS
+config = toml.load('../Config.toml')
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -24,15 +21,20 @@ class_id = 0
 x_loc = 0.0
 while True:
     try:
-        data = sock.recv(MAX_EXPECTED_DATA_LEN)
-        message = data.decode("ascii")
-        msg_fields = message.split(',')
+        data = sock.recv(MESSAGE_LENGTH)
+        if len(data) == 0:
+            print("Error: failed to receive data. Terminating...")
+            break
 
-        class_id = int(msg_fields[0])
-        x_loc = float(msg_fields[1])
+        detection = DetectionMessage.from_bytes(data)
+        if detection is None:
+            print("Error: received invalid message. Skipping...")
+            continue
 
-        print(f'Detected class {class_id} at x={x_loc}')
+        print(f'Detected class {detection.class_id} at x={detection.x_loc}')
     except socket.timeout:
         pass
-    except:
-        print('Received invalid message')
+    except socket.error:
+        e = sys.exc_info()[1]
+        print(f'Socket error: errno={e}. Terminating...')
+        break

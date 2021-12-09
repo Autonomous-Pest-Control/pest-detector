@@ -14,16 +14,18 @@
 
 # Import packages
 import os
+from time import sleep
 import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.ops.gen_array_ops import empty
 from vidgear.gears import NetGear, netgear
+from detection_server import DetectionServer
 import toml
 import argparse
 import sys
 
-from detection_server import DetectionServer
+MIN_CONFIDENCE = 0.5
 
 config = toml.load('../Config.toml')
 
@@ -58,7 +60,8 @@ def run_detection_single_frame(model_args, frame_expanded):
             break
         detection_box = out_boxes[indx]
         average_x = (detection_box[1] + detection_box[3]) / 2.0
-        detections.append((class_id, average_x))
+        confidence = out_scores[indx]
+        detections.append((class_id, average_x, confidence))
 
     return (detections, output_dict)
 
@@ -147,14 +150,6 @@ client = NetGear('0.0.0.0', config['edge_server']['netgear']['port'], 'tcp',
 server = DetectionServer()
 
 while(True):
-
-
-    # Acquire frame and expand frame dimensions to have shape: [1, None, None, 3]
-    # i.e. a single-column array, where each item in the column has the pixel RGB value
-
-    # # Local camera detection
-    # ret, frame = camera.read()
-
     # Get camera frame from client
     try:
         t1 = cv2.getTickCount()
@@ -171,9 +166,10 @@ while(True):
         model_config = [detection_boxes, detection_scores, detection_classes, num_detections]
         (detections, output_dict) = run_detection_single_frame(model_config, frame_expanded)
 
-        for (class_id, avg_x) in detections:
-            if class_id == 1:
-                print(f'Person: x={avg_x}')
+        for (class_id, avg_x, confidence) in detections:
+            if class_id == 1 and confidence > MIN_CONFIDENCE:
+                server.send_detection(class_id, avg_x)
+                # print(f'Person: x={avg_x} ({confidence})')
 
         # Draw the results of the detection (aka 'visulaize the results')
         vis_util.visualize_boxes_and_labels_on_image_array(
@@ -194,6 +190,7 @@ while(True):
         t2 = cv2.getTickCount()
         time1 = (t2-t1)/freq
         frame_rate_calc = 1/time1
+
     except KeyboardInterrupt:
         break
 
