@@ -2,31 +2,32 @@ import socket
 import sys
 import threading
 import time
-
-HOST = ''	# Symbolic name meaning all available interfaces
-PORT = 5455	# Arbitrary non-privileged port
+import toml
 
 SEND_RATE = 4
 
 class DetectionServer:
     def __init__(self):
+        config = toml.load('../Config.toml')
+
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.settimeout(0.1)
 
-        print('Socket created')
+        print('Detection Server: Socket created')
 
         #Bind socket to local host and port
         try:
-            self.sock.bind((HOST, PORT))
+            port = int(config['edge_server']['detection']['port'])
+            self.sock.bind(('', port))
         except socket.error as msg:
-            print('Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1])
+            print('Detection Server: Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1])
             sys.exit()
             
-        print('Socket bind complete')
+        print('Detection Server: Socket bind complete')
 
         #Start listening on socket
         self.sock.listen(10)
-        print('Socket now listening')
+        print(f'Detection Server: Socket now listening on 0.0.0.0:{port}')
 
         self.stopped = False
     

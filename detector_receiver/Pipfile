@@ -6,8 +6,12 @@ name = "pypi"
 [packages]
 matplotlib = "*"
 numpy = "==1.19.5"
-opencv-python = "==4.5.1.48"
+opencv-contrib-python = "==4.5.1.48"
 vidgear = "==0.1.8"
 tensorflow-gpu = "==2.6.0"
+toml = "*"
 
 [dev-packages]
+
+[requires]
+python_version = "3.9.1"

@@ -1,0 +1,8 @@
+[edge_server]
+ip = "192.168.0.2"
+
+[edge_server.netgear]
+port = "5454"
+
+[edge_server.detection]
+port = "5455"

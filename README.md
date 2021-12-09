@@ -16,7 +16,7 @@ tar -xzvf ssdlite_mobilenet_v2_coco_2018_05_09.tar.gz
 - For troubleshooting/more info run `v4l2-ctl --device /dev/video0 --list-formats-ext`
 
 3. Convert `*_label_map.pbtxt` file to Python dictionary. Load `string_int_label_map.proto` file and compile it using `protoc`:
-- `cd models/research && protoc object_detection/protos/*.proto --python_out=.`
+- `cd detector_receiver/models/research && protoc object_detection/protos/*.proto --python_out=.`
 
 ### Quickstart
 

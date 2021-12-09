@@ -18,10 +18,14 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.ops.gen_array_ops import empty
-from vidgear.gears import NetGear
+from vidgear.gears import NetGear, netgear
+import toml
 import argparse
 import sys
+
 from detection_server import DetectionServer
+
+config = toml.load('../Config.toml')
 
 def run_detection_single_frame(model_args, frame_expanded):
     """Runs detection on a single image
@@ -137,7 +141,7 @@ ret = camera.set(3,IM_WIDTH)
 ret = camera.set(4,IM_HEIGHT)
 
 options = {'THREADED_QUEUE_MODE': False}
-client = NetGear('0.0.0.0', '5454', 'tcp',
+client = NetGear('0.0.0.0', config['edge_server']['netgear']['port'], 'tcp',
                  1, receive_mode=True, logging=True, **options)  # Define netgear client at Server IP address.
 
 server = DetectionServer()

@@ -2,6 +2,9 @@ from vidgear.gears import VideoGear
 from vidgear.gears import NetGear
 import numpy as np
 import time
+import toml
+
+config = toml.load('../Config.toml')
 
 print('Starting camera sender...')
 
@@ -56,4 +59,4 @@ def run_camera(input_str, address, port, protocol, pattern=0, fps=25, send_rate=
     stream.stop()
 
 # Send the camera frames to the specified server address over a tcp connection
-run_camera('0', '192.168.0.2', '5454', 'tcp', 1)
+run_camera('0', config['edge_server']['ip'], config['edge_server']['netgear']['port'], 'tcp', 1)
