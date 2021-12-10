@@ -56,11 +56,11 @@ class DetectionServer:
 
 
     def serialize_message(self):
-        print(f"serialize message=({self.last_message[0]},{self.last_message[1]})")
+        # print(f"serialize message=({self.last_message[0]},{self.last_message[1]})")
         buffer = bytes([self.last_message[0]])
         buffer += struct.pack('f', self.last_message[1])
 
-        print(f"generated len({len(buffer)}) buf={buffer}")
+        # print(f"generated len({len(buffer)}) buf={buffer}")
         return bytearray(buffer)
 
 
@@ -71,7 +71,7 @@ class DetectionServer:
                     message = self.serialize_message()
                     self.client_conn.sendall(message)
                     self.last_message = None
-                    # print(f'Forwarded message to client \'{message}\'')
+                    print(f'Forwarded message to client \'{message}\'')
                 time.sleep(1.0/SEND_RATE)
             except socket.error:
                 e = sys.exc_info()[1]
