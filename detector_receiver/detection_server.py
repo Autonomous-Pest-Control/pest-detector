@@ -72,7 +72,6 @@ class DetectionServer:
                     self.client_conn.sendall(message)
                     self.last_message = None
                     print(f'Forwarded message to client \'{message}\'')
-                time.sleep(1.0/SEND_RATE)
             except socket.error:
                 e = sys.exc_info()[1]
                 print(f'Detection Server: socket error={e}. Terminating...')

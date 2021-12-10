@@ -14,7 +14,6 @@
 
 # Import packages
 import os
-from time import sleep
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -26,6 +25,7 @@ import argparse
 import sys
 
 MIN_CONFIDENCE = 0.5
+RECV_RATE = 25
 
 config = toml.load('../Config.toml')
 

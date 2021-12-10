@@ -1,9 +1,16 @@
 import socket
 import sys
-import threading
 import toml
 
 from detection_message import MESSAGE_LENGTH, DetectionMessage
+from controller import Controller
+
+CMD_CLOCKWISE = 1
+CMD_COUNTER_CLOCKWISE = 2
+CMD_STOP = 3
+
+DEVICE_NAME_WIN = 'COM6'
+DEVICE_NAME_LINUX = '/dev/ttyX'
 
 config = toml.load('../Config.toml')
 
@@ -16,6 +23,8 @@ server_port = int(config['edge_server']['detection']['port'])
 print(f'Attempting connection to {server_hostname}:{server_port}')
 sock.connect((server_hostname, server_port))
 print(f'Connected to {server_hostname}:{server_port}')
+
+controller = Controller()
 
 class_id = 0
 x_loc = 0.0
@@ -32,6 +41,9 @@ while True:
             continue
 
         print(f'Detected class {detection.class_id} at x={detection.x_loc}')
+
+        controller.send_command(CMD_CLOCKWISE, 0)
+
     except socket.timeout:
         pass
     except socket.error:

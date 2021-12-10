@@ -4,13 +4,14 @@ import numpy as np
 import time
 import toml
 
-SEND_RATE = 8
+CAPTURE_RATE = 3
+SEND_RATE = 3
 
 config = toml.load('../Config.toml')
 
 print('Starting camera sender...')
 
-def run_camera(input_str, address, port, protocol, pattern=0, fps=25, send_rate=SEND_RATE, client_plugins={}):
+def run_camera(input_str, address, port, protocol, pattern=0, fps=CAPTURE_RATE, send_rate=SEND_RATE, client_plugins={}):
     """Runs the camera, sends messages
     Args:
         input_str (str): Path to video file **OR** an `int` for camera input

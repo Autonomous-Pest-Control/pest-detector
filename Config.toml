@@ -6,3 +6,7 @@ port = "5454"
 
 [edge_server.detection]
 port = "5455"
+
+[serial]
+# device_name = "COM6"
+device_name = "/dev/ttyACM0"
